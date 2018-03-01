@@ -1,0 +1,28 @@
+Un repetidor en la red Tor es un ordenador o computadora configurado para redireccionar el trafico dentro de la red Tor. La configuración de los repetidores se hace mediante un fichero torrc que contiene todas las directivas necesarias para configurar el servicio. Entre las directivas se incluyen las políticas para aceptar o rechazar conexiones, la banda ancha que se le otorga al repetidor o las contraseñas de acceso al mismo para su configuración.\\
+Hay tres tipos de nodos dentro de la red Tor:
+\begin{itemize}
+	\item Nodo Guard o nodo de entrada:\\
+		Este tipo de nodos son los que se encargan del inicio de la comunicación de un usuario con la red Tor. Son uno de los nodos mejor configurados de la red junto con los nodos de salida ya que estos nodos son los únicos que conocen la identidad del usuario que desea conectarse a la red Tor.
+	\item Nodo middle o relay:\\
+		Este tipo de nodos son nodos genéricos que se encargan de redireccionar el tráfico de la red en el punto intermedio de los circuitos, es decir, son aquellos nodos que ocupan un lugar intermedio en los circuitos de Tor. La configuración de estos nodos no ha de ser tan buena ni se les exige tantas cualidades como a los nodos de entrada y salida. Son por ello los nodos más comunes de configurar y más comunes dentro de la red Tor.
+	\item Nodos de salida:\\
+		Estos nodos son junto con los nodos de entrada los nodos más críticos de la red. Estos nodos son los encargados de hacer las peticiones a los servidores directamente y por ello disponen de los paquetes sin ningún tipo de cifrado listos para ser entregados al servidor. Esto significa que los nodos pueden leer la información de los paquetes y alterarla aunque no sepan de que usuario proviene. Por ello son los nodos en los que más se fijan las Autoridades de Directorio a la hora de marcarlos como seguros y correctos para poder usarlos como nodos de salida.
+\end{itemize}
+Los nodos dentro de la red Tor son valorados por unas Autoridades de Directorio que luego explicaremos con más profundidad. Estas Autoridades de directorio se encargan de asignar unos flags a cada nodo y se encargan de gestionar la información que se publica acerca de cada nodo para procurar los mejores circuitos a cada usuario.\\
+Los flags que se les pueden asignar a los nodos son:
+\begin{itemize}
+	\item BadExit: este flag se le asigna a los nodos de salida cuya configuración es mala o están diseñados con intenciones maliciosas. El sistema de valoración y análisis de nodos detecta ciertos tipos de ataques que se pueden realizar en un nodo de salida como un man in the middle o alteración de paquetes. Si alguna de estas técnicas es descubierta por las autoridades de directorio el nodo es marcado como un BadExit.
+	\item Fast: cuando el nodo dispone de un gran ancho de banda este es marcado como fast para que se tenga en cuenta al generar los circuitos. Se necesita al menos 100KB/s de banda ancha tanto de subida como de bajada para esto.
+	\item Guard: este flag indica que el nodo es susceptible de ser escogido como nodo de entrada en el circuito. Se necesita que este nodo tenga al menos 250KB/s de ancho de banda en ambos sentidos.
+	\item Authority: este flag se le asigna a los nodos que son Autoridades de Directorio dentro de la red Tor.
+	\item Exit: se le asigna a los nodos que son susceptibles de ser escogidos como nodos de salida. Debe permitir la salida por al menos dos de los puertos 80, 443, 6667 y debe permitir en estos la salida al menos de un octavo del espacio de direcciones.
+	\item HSDir: este flag indica que el nodo es un servicio oculto. Para ganar este flags debe de tener todos los ficheros necesarios para configurar un servicio oculto disponibles y debe haber estado en línea al menos durante 25 horas.
+	\item Named: cada Autoridad de Directorio puede escoger si enlazar el nickname de cada nodo a la clave privada que le corresponda dentro de la red. Si este enlace se produce y es verificado entonces el nodo recibirá el flag named.
+	\item Running: se le concede a aquellos nodos que han estado activos al menos durante 45 minutos de manera exitosa.
+	\item Stable: se le asigna el flag de stable si el nodo ha estado activo en ejecución al menos durante 7 días de manera exitosa.
+	\item Unnamed: se le asigna este flag cuando el nickname no puede ser enlazado con la clave privada dentro de la red Tor por la Autoridad de Directorio correspondiente.
+	\item Valid: este flag indica que el nodo está ejecutando una versión de Tor no modificada y que la Autoridad de Directorio no ha introducido dicho nodo en ninguna lista negra.
+	\item V2Dir: el nodo soporta el protocolo de directorio en su versión 2.
+\end{itemize}
+
+Una vez asignados los flags correspondientes dentro de la lista anterior el nodo está suficientemente valorado por las Autoridades de Directorio como para ser incluido en circuitos. Dependiendo de las necesidades de cada usuario se le asignarán nodos que mantengan una latencia en la red parecida a su propia conexión.

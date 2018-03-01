@@ -1,0 +1,10 @@
+Para el funcionamiento de la red Tor como ya hemos ido mencionando ésta se vale de una red parcialmente descentralizada de nodos, que no son mas que ordenadores comunes encargados de redireccionar tráfico de red.\\
+Cuando un usuario desea conectarse a internet mediante la red Tor lo primero que debe de establecerse es un circuito dentro de la red. Esto se hace mediante unos mecanismos de evaluación de nodos que ya comentaremos más adelante. El circuito formado puede ser de longitud variable y tiene una caducidad, es decir, se renuevan los circuitos de cada usuario periódicamente. Dentro del circuito cabe destacar que los nodos no se conocen entre sí ni pueden modificar la información de los paquetes porque ésta va cifrada en todo momento.\\
+Una vez establecido un circuito el usuario puede comenzar a navegar de manera normal. El funcionamiento subyacente es que al realizar una petición a un servidor web el usuario que está navegando cifra los paquetes con tantas capas de cifrado como nodos haya en su circuito y va transfiriendo los paquetes al primer nodo del mismo. Cada nodo del circuito está encargado de quitar una capa de cifrado y continuar pasando paquetes a los nodos siguientes. De esta manera el usuario que realiza la petición es anonimizado. El último nodo del circuito es el encargado de pedir la información del servidor y vuelve a poner en el paquete de respuesta las correspondientes capas de cifrado para realizar el camino inverso.\\
+Dentro de la red Tor hay tres tipos de nodos:
+\begin{itemize}
+	\item Nodos de entrada: son los que ocupan el primer lugar en los circuitos Tor.
+	\item Nodos Relay o Middle Nodes: son los que ocupan un lugar intermedio en los circuitos.
+	\item Nodos de salida: son los nodos que están en último lugar en los circuitos y los encargados de hacer las peticiones a los servidores.
+\end{itemize}
+Indagaremos más en profundidad sobre estos nodos en los apartados siguientes.

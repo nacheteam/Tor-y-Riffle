@@ -1,0 +1,16 @@
+En esta última parte discutimos la implementación y prototipo presentado por los investigadores del MIT.
+
+La implementación está hecha sobre el lenguaje de programación Go. El prototipo se ha basado en dos aspectos: compartición de archivos y un microblog, esto es, cada cliente envía mensajes cortos en texto plano los cuales se difunden a todos los demás usuarios (a la manera de Twitter). Los códigos fuentes son de dominio público. Hemos intentado contactar con los creadores vía email y aún esperamos respuesta, para que nos expliquen, al menos por encima, cómo compilarlo, ejecutarlo y cómo funciona. 
+
+\subsection{Compartición de archivos}
+En la implementación de esta parte están incluídos todos los avances descritos previamente. Los archivos utilizados para la prueba están divididos en bloques de 256KB, similar a como lo hace BitTorrent. En los experimentos, Riffle tiene buenos resultados con hasta 200 clientes, soportando 100KB/s de banda ancha efectiva por cliente. La primera restricción que se encuentra es la banda ancha del servidor. Si el servidor estuviera conectado con 10 Gbps, se obtendría un funcionamiento idóneo.
+ 
+ Las discrepancias entre  el modelo ideal y el prototipo para un gran número de clientes es debido a dos factores: primero, el modelo ideal desprecia los costes computacionales, los cuales crecen linealmente con el número de clientes. Aunque la desencriptación no supone grandes costes, estos se vuelven representativos cuando el número de clientes es alto. Finalmente, la banda ancha efectiva (disponible) para cada cliente decrece dado que compartimos 100 Mbps entre algunos cientos de clientes. 
+ 
+ Aunque Riffle parecer ser poco eficiente, protege el anonimato de forma consistente: el prototipo garantiza el anonimato tanto del emisor como del receptor. Las operaciones descritas en los apartados anteriores, como PIR o mezcla híbrida son costosas y algo lentas, dado que están muy orientadas a la seguridad. Sin embargo, los creadores tienen confianza en encontrar formas de ganar eficiencia sin perder de vista este paradigma. 
+ 
+ \subsection{Microblog}
+ 
+ Los creadores han simulado una situación de microblog creando cientos de miles de clientes que mandan un pequeño mensaje (160B hasta 320B) cada ronda, difundiéndolo a todos los clientes al final de cada ronda. Debido a las limitaciones técnicas, han creado cientos de miles de "superclientes" y cada uno de ellos manda cientos de mensajes para simular un gran número de usuarios. Los resultados obtenidos dicen que se pueden soportar 10000 usuarios con menos de un segundo de latencia con mensajes de 160B. Si admitimos algo de latencia entre mensajes, se pueden soportar más de 100000 usuarios con un delay de 10 segundos. Además, se ha visto que la latencia decrece de forma proporcional con mensajes más cortos. Dado que Riffle es eficiente, la latencia se determina solamente con el número total de bits contenidos en los mensajes en cada ronda. Esto facilita la extracción de conclusiones en materia de eficiencia y su relación con el número de usuarios y el tamaño del mensaje. 
+ 
+ 

@@ -1,0 +1,26 @@
+El anonimato es un derecho fundamental en toda sociedad democrática y es crucial en la libertad de expresión. Las redes anónimas como Tor, ya presentado anteriormente, han ido ganando popularidad en los usuarios interesados en altos niveles de privacidad. Sin embargo, estos sistemas son susceptibles ante ataques basados en análisis de tráfico, llevados a cabo por poderosos adversarios como estados autoritarios o que controlan los ISP, o incluso adversarios menores que han sido capaces de controlar el tráfico de los usuarios.
+Existen dos tipos de redes que ofrecen resistencia al análisis del tráfico incluso bajo la presencia de tales adversarios. Son las DC-Nets (Dining-Crytographer Networks), donde la red está formada por servidores y clientes y se preserva el anonimato si se asegura la existencia de un servidor honesto (no malicioso) , y las MixNets, o redes mixtas, que usan mezclas verificables para permutar los textos cifrados de forma que se mantiene la privacidad. Sin embargo, ambas dos presentan problemas de eficiencia. La primera, sufre un gran overhead de banda ancha para poder garantizar la privacidad, y la segunda, un gran overhead computacional. 
+
+Es por eso que presentamos Riffle como alternativa. Riffle es un sistema de comunicación anónima que garantiza una férrea resistencia al análisis del tráfico y una fuerte privacidad minimizando los costes computacionales y de banda ancha, dando lugar a un sistema altamente eficiente. Para ello, aglutina una serie de ideas innovadoras tales como:
+
+\begin{itemize}
+	\item Un sistema híbrido de mezcla garantizada que usa encriptación simétrica, evitando la costosa mezcla de claves públicas.
+	\item Una nueva aplicación de recuperación de información privada.
+	\item Una gran eficiencia en las comunicaciones anónimas resistentes tanto a los análisis de tráfico como a los clientes maliciosos.
+\end{itemize}
+
+\textbf{\large{Propiedades de Seguridad}} \\ 
+
+Riffle posee tres propiedades de seguridad principales. La primera es corrección, que garantiza que Riffle es un sistema de comunicación válido.
+
+\textbf{Definición 1.} \textit{El protocolo es correcto si, después de una ejecución satisfactoria del protocolo, todo mensaje de un cliente honesto está disponible para todos los clientes honestos.} \\
+
+Además, Riffle pretende proveer de dos propiedades de anonimato más: anonimato del emisor y del receptor. \\
+
+\textbf{Definición 2.} \textit{El protocolo provee anonimato al emisor si, para toda ronda de comunicación, la probabilidad de que un adversario descubra el cliente honesto que mandó un mensaje es suficientemente cercana a 1/k, siendo k el número de clientes honestos.} \\
+
+Es decir, que ningún adversario puede franquear el anonimato de un cliente honesto. La privacidad del receptor es totalmente complementaria: \\
+
+\textbf{Definition 3.} \textit{El protocolo provee anonimato al receptor si, para toda ronda de comunicación, la probabilidad de que un adversario descubra cuál de los n mensajes ha recibido un cliente honesto es suficientemente cercana a 1/n, donde n es el número de mensajes disponibles.}  \\
+
+En el caso de los receptores, los clientes no producen ningún mensaje, así que la única información disponible para un adversario son los metadatos, los cuales serán ocultos tanto como sea posible.

@@ -1,0 +1,8 @@
+SOCKS es un protocolo que se encarga de que la transmisión de paquetes entre un cliente y un servidor sea a través de un servidor proxy. Este protocolo es un estándar de facto.\\
+Su relación con Tor es evidente. SOCKS hace que una conexión mantenida(basada en TCP) sea segura apoyándose en un proxy. Si replicamos esta idea de proxys y encriptamos la comunicación tendremos algo parecido a lo que es Tor.\\
+Las diferencias entre SOCKS y Tor son:
+\begin{itemize}
+	\item SOCKS se basa en el uso de un único proxy para la comunicación mientras que Tor emplea un número variable de ellos.
+	\item Tor utiliza SOCKS en intervalos de tiempo, es decir, SOCKS tiene una conexión persistente mientras que Tor limita dicho tiempo de conexión y va variando los proxys empleados.
+	\item SOCKS delega la encriptación y comunicación segura al servidor proxy el cual puede o no tener una buena configuración de seguridad. Por el contrario Tor se encarga de cifrar la comunicación y de que cada nodo en un circuito no conozca al resto.
+\end{itemize}

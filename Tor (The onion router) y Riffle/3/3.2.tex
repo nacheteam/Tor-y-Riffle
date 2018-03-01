@@ -1,0 +1,107 @@
+Esta sección comienza con un protocolo base que nos introduce en la estructura de Riffle pero con ciertos problemas de seguridad e ineficiencia. A continuación presentamos las primitivas criptográficas usadas en Riffle y el protocolo final. Finalmente haremos un breve estudio del overhead de banda ancha y un análisis de seguridad
+
+\subsubsection{Primer acercamiento: Protocolo base}
+Esta será la base del protocolo de Riffle. Este protocolo se lleva acabo en $"$épocas$"$ o etapas, y cada una de ellas está formada por dos fases: configuración y comunicación. La fase de configuración se usa para compartir claves y ocurre sólo una vez en el inicio de cada etapa. La fase de comunicación consta de múltiples rondas, y los clientes descargan y mandan mensajes a los servidores en cada una de ellas.
+
+Durante la etapa de configuración, cada servidor $S_i$ genera una clave pública $p_i$, y todas las claves se hacen publicas para todos los clientes y servidores del grupo. Cada ronda de la fase de comunicación consta de tres etapas: (1) subida, (2) mezcla, y (3) descarga. En la fase de subida, un cliente $C_j$ encripta por capas (onion-encrypting) su mensaje con todas las clave públicas $\{p_i:i \in [1,m]\}$ y sube dicho texto cifrado a su servidor principal. Cuando todos los textos cifrados se han subido, el primer servidor $S_1$ recopila los textos. 
+
+En la etapa de mezcla, encabezada por el servidor $S_1$, los servidores llevan a cabo una mezcla y desencriptación fiable. Cada servidor manda la prueba de la desencriptación y permuta, repartiéndolos, los textos desencriptados entre todos los demás servidores., los cuales verifican las pruebas recibidas. Este proceso de desencriptación, mezcla y verificación de las pruebas se repite hasta que el último servidor revela todos los textos planos, sin encriptación, a todos los servidores.
+
+Finalmente, en la etapa de descarga, todos los mensajes en texto plano se difunden a los clientes a través del servidor principal de cada cliente. 
+
+\subsubsection{Mezcla híbrida comprobable}
+
+A pesar del ahorro significativo de banda ancha, el exceso de costes computaciones de las mezclas fiables que lleva a cabo el protocolo base hace que sea inapropiado para comunicaciones con gran banda ancha. Para abordar y mejorar los aspectos de la mezcla comprobable tradicional, proponemos una nueva mezcla híbrida, la cual se lleva a cabo una sola vez para compartir las claves encriptadas que se usan durante una época. Utilizamos encriptación autenticada en las claves compartidas y verificamos las mezclas a través de textos cifrados autenticados. Intuitivamente, se impulsa la verificación de la mezcla inicial de las claves.
+
+La mezcla, o permutación, puede ser descrita como un protocolo llevado a cabo por tres conjuntos disjutos: los clientes, un servidor probador y un servidor verificador. El objetivo del cliente es mandar R conjuntos de n mensajes al verificador usando el probador, siempre que se satisfagan dos propiedades. La primera, que el verificador no sabe el orden de los mensajes en cada conjunto. La segunda, el verificador debe poder comprobar si el probador alteró o borró algún mensaje. A continuación, se expone el algoritmo. \\
+
+\textbf{Algoritmo 1. Mezcla híbrida}
+\begin{enumerate}
+	\item \textbf{Compartir claves:} Un probador P y un verificador V generan parejas de claves públicas-privadas $(s_P,p_P)$ y $(s_V,p_V)$ y hacen públicas las claves $p_P$ y $p_V$. Un cliente C comparte sus claves $\{k'_i: i \in [n]\}$ con P.
+	\item \textbf{Permutación de las claves:} C genera $\{k_i: i \in [n]\}$ para V y manda $\{Enc_{p_p}(Enc_{p_v}(k_j))\}$ a P y V. P desencripta y mezcla de
+	forma verificada usando una permutación aleatoria $\pi$, y manda
+	$\{Enc{p_v}(k_{\pi_j})\}$ a V. V verifica la mezcla y la desencriptación, y desencripta para ver $\{k_{\pi _j}\}$.
+	\item  \textbf{Envío de mensajes:} Para $r=1,...,R,$
+	\begin{enumerate}
+		\item Mezcla: Para mandar mensajes $\{M_j^r\}_{j \in [n]}$ C encripta los mensajes en capas (onion-encrypt) y envía
+		 $\{AEnc_{k'_j,r}(A Enc_{k_j ,r}(M_j ^r))\}_{j \in [n]}$ a P, donde $AEnc$ es un esquema autenticado encriptado que usa r como nonce. P desencripta una capa de la encriptación usando $\{k'_j\}_{j \in [n]}$, los permuta usando la misma $\pi$ y manda $\{AEnc_{k_\pi(j),r}(M_{\pi(j)} ^r))\}_{j \in [n]}$ a V.
+		 \item Verificación: V verifica el texto cifrado comprobando la autenticación a través de las claves $\{k_{\pi(j)}\}_{j \in [n]}$ y r, desencripta una capa y adquiere los mensajes $\{M_{\pi(j)}^r\}_{j \in [n]}$.
+	\end{enumerate}
+	
+\subsection{Recuperación de información privada (PIR) en Riffle}
+Existen situaciones en las que un cliente no está interesado en la mayoría de los mensajes. Por ejemplo, consideremos dos clientes
+chateando a través de Riffle. Si los mensajes se mezclan usando la misma permutación cada ronda, los clientes pueden intuir la localización de los mensajes tras una ronda de comunicación, pero para leer los propios
+están obligados a descargar todos los mensajes disponibles. En este escenario, podemos usar el multiservidor de recuperación de información privada (PIR), propuesto para mejorar la eficiencia en la comunicación. 
+Veamos cómo funciona: sea $I_j$ la localización (índice) del mensaje que el cliente $C_j$ quiere acceder. Para descargar el mensaje, $C_j$
+primero genera m-1 máscaras de bits aleatorias de longitud n, y computa cada una de forma que la XOR de todas las m máscaras da lugar a una máscara con un 1 sólo en la posición $I_j$. Cada máscara se manda a un servidor y cada servidor $S_i$ hace la XOR a los mensajes en las posiciones con 1 en la máscara para generar las respuestas $r_{i,j}$ para $C_j$. Finalmente, $C_j$ descarga todos los $\{r_{i,j}\}_{i \in [m]}$ y les hace la XOR a todos juntos para adquirir el mensaje en texto plano. 
+Aunque este algoritmo es muy eficiente, se puede reducir aún más el overhead de banda ancha usando generadores de números pseudoaleatorios (PRNGs). Para evitar mandar las máscaras a todos los servidores en cada ronda, $C_j$ comparte una máscara inicial con todos los servidos en la fase de configuración. Cada servidor actualiza después la máscara internamente por medio de un PRNG cada ronda, de forma que $C_j$ solo manda una máscara a su servidor principal $S_{p_j}$ para asegurar que la XOR de todas las máscaras tienen un 1 solamente en la posición $I_j$
+
+Para evitar la descarga de un mensaje en cada servidor, $C_j$ puede pedirle a $S_{p_j}$ que recoja todas las respuestas y le haga la XOR a todas juntas. Sin embargo, si se hace eso, el servidor principal de $C_j$ conocería el mensaje que $C_j$ quiere descargar. Para prevenir este problema, $C_j$ comparte otra serie de secretos con cada servidor durante la configuración, y cada servidor hace la XOR del secreto en la respuesta. $S_{p_j}$ ahora puede recoger las respuestas y hacerles la XOR sin saber nada sobre el mensaje. Finalmente, $C_j$ descarga la respuesta de $S_{p_j}$ (es decir, el mensaje XOR con los secretos compartidos) y borra los secretos para recuperar el mensaje. 
+
+\textbf{Algoritmo 2. Recuperación de información privada}
+\begin{enumerate}
+	\item Configuración. Cada cliente $C_j$ comparte dos secretos $m_{i,j}$ y $s_{i,j}$  con cada servidor $S_i$ excepto con su servidor principal $S_{p_j}$. Esto pasa una vez por época.
+	\item Descarga:
+	\begin{enumerate}
+		\item Generación de máscaras. Sea $I_j$ el índice del mensaje que $C_j$ quiere descargar. $C_j$ genera $m_{p_j,j}$ de forma que $\oplus _i m_{i,j} = e_{I_j}$, donde $e_{I_j}$ es una máscara de bits con un 1 en el índice $I_j$. $C_j$ manda $m_{p_j,j}$ a $S_{p_j}$.
+		\item Generación de la respuesta. Cada servidor $S_i$ computa la respuesta $r_{i,j}$ para $C_j$ calculando la XOR de los mensajes en las posiciones donde hay 1's en $m_{i,j}$, y haciendo la XOR a los $s_{i,j}$. Específicamente, $r_{i,j} = (\oplus _l m_{i,j}(l) \land M_l) \oplus s_{i,j}$, donde $M_l$ es el mensaje en este plano número $l$. Entonces, los servidores mandan $r_{i,j}$ a $S_{p_j}$ y éste calcula $r_j$:
+		$r_j=\oplus _i r_{i,j} = (\oplus _i \oplus _l m_{i,j}[l] M_l) \oplus (\oplus _i s_{i,j}) = M_{I_j} \oplus (\oplus _i s_{i,j})$.
+		\item Descarga del mensaje. $C_j$ descarga $r_j$ de $S_{p_j}$ y hace la XOR de todos los $\{s_{i,j}\}_{i \in [m]}$ para obtener el mensaje deseado, $M_{I_j}= r_j \oplus (\oplus _i s_{i,j})$.
+		\item Actualización de secretos. C y S aplican PRNG a sus máscaras y secretos para refrescarlos. 
+	\end{enumerate}
+\end{enumerate}
+
+\subsection{Protocolo Riffle}
+Presentamos por fin el protocolo Riffle al completo. Durante la fase de configuración, los clientes comparten tres conjuntos de pares secretos con los servidores: (1) $\{k_{i,j}\}$ usando mezcla híbrida y (2) $\{m_{i,j}\}$ y (3) $\{s_{i,j}\}$ usando PIR. Cada servidor genera una permutación $\pi_i$ para la mezcla verificada y las retienen para su futuro en uso en la fase de comunicación. Las claves $\{k_{i,j}\}$ estarán en la posición $\pi_i-1(...(\pi(j))...)$ en $S_i$ al final de la configuración. 
+
+En la ronda $r$ de la fase de comunicación, el protocolo usa la mezcla híbrida para subir datos y PIR para descargar. En la etapa de subida, cada cliente $C_j$ encripta por capas un mensaje usando $\{k_{i,j}\}_{i \in [m]}$ y sube los textos cifrados al servidor $S_1$ a través de su servidor primario. En la etapa de mezcla, empezando por $S_1$, cada $S_i$ autentica y desencripta los textos cifrados utilizando las mismas claves $\{k_{i,j}\}_{i \in [m]}$, las mezcla usando $\pi_i$ guardada en
+la fase de configuración, y envía el resultado al siguiente servidor. 
+Esto implica que en $S_i$, el texto cifrado $A Enc_{k_{i,j},r}(...(A Enc_{k_{mj},r}(M_j ^r))...)$ de $C_j$ está en la posición
+$\pi_i-1(...(\pi(j))...)$. El último servidor revela los mensajes en texto plano a todos los servidores. La permutación final de los mensajes es $\pi = \pi_m(\pi_{m-1}(...(\pi_2(\pi_1))))$.
+
+En la etapa de descarga, los clientes llevan a cabo un PIR con las máscaras y los secretos, o descargan todos los mensajes a través de difusión.
+
+\textbf{Algoritmo 3. Procolo Riffle}
+\begin{enumerate}
+	\item Configuración.
+	\begin{enumerate}
+		\item Mezcla de las claves:
+		\begin{enumerate}
+			\item Cada servidor $S_i$ genera pares de claves públicas-privada y facilita la pública $p_i$ a los clientes. Además, genera la permutación $\pi_i$.
+			\item Cada cliente $C_j$ genera las claves $k_{i,j}$ para $S_i$ y las encripta con las claves $p_1,...,p_i$ para $i=1,...,m$. $C_j$ entrega $m$ $\{k_{i,j}\}$ encriptadas por capas a $S_1$ a través del servidor principal.
+			\item Desde $S_1$ a $S_m$, $S_i$ desencripta las claves. $S_i$ las guarda, realiza una mezcla verificada de las otras claves usando $\pi_i$ y las envía mezcladas a $S_{i+1}$, Los servidores verifican la desencriptación y mezclan.
+		\end{enumerate}
+		\item Compartir secretos: Cada pareja $S_i,C_j$ genera una pareja de secretos $m_{i,j}.s_{i,j}$ utilizados en PIR (Algoritmo 2), en la etapa de descarga.
+	\end{enumerate}
+	\item Comunicación. En la ronda $r$,
+	\begin{enumerate}
+		\item Subida de datos. $C_j$ encripta por capas el mensaje $M_j ^r$ usando encriptación autenticada con $\{k_{i,j}\}$ y $r$ como un nonce: $AEnc_{1,...,m}(M_j ^r) = A Enc_{k_{i,j},r}(...(A Enc_{k_{mj},r}(M_j ^r))...)$. $C_j$ entonces envía $AEnc_{1,...,m}(M_j ^r)$ a $S_1$ a través de su servidor principal.
+		\item Mezcla. Desde $S_1$ hasta $S-m$, $S_i$ autentica, desencripta y mezcla los textos cifrados usando $\pi_i$, y envía mezclado $\{AEnc_{i+1,...,m}(M_j ^r)\}_{j \in [n]}$ a $S_{i+1}$. $S_m$ comparte los mensajes finales en texto plano con todos los servidores.
+		\item Descarga. Los clientes descargan los mensajes en texto plano utilizando PIR.
+	\end{enumerate}
+\end{enumerate}
+	
+\end{enumerate} 
+
+\subsection{Acusación}
+En redes DC es fácil realizar un ataque de denegación de servicio a la red completa por parte de un cliente malicioso. De hecho, cualquier cliente puede hacer XOR sobre unos bits arbitrarios y corromper un mensaje en cualquier momento. Este problema tiene soluciones complicadas y a veces costosas, como redes trampa o limitar el tamaño del grupo para minimizar los ataques.
+
+Sin tomar algunas precauciones, podemos encontrar ataques como estos en Riffle: durante la subida de datos, un cliente malicioso podría mandar un texto cifrado mal autenticado, de forma que el sistema se detendría. Sin embargo, las mezclas descritas no permiten que la entrada de un cliente corrompa las demás entradas. Teniendo en cuenta esta ventaja, Riffle ofrece una manera eficiente de mantener un cliente responsable sin introducir costes operacionales y sin robar privacidad a los clientes honestos: cuando un servidor $S_i$ detecta que un texto cifrado en la posición $j$ está mal autenticado, inicia el proceso de acusación revelando $j$ a $S_{i-1}$. $S_{i-1}$ revela $j'=\pi_{i-1} ^-1(j)$ y así sucesivamente hasta $S_1$, que revela el cliente que mandó el texto cifrado.
+
+Un cliente malicioso, sin embargo, no puede llevar a cabo el mismo ataque durante la descarga. Cuando los mensajes se difunden, no hay ningún cliente que pueda interrumpir la comunicación. Cuando los clientes usan PIR para descargar el mensaje, no hay una noción de texto cifrado mal autenticado o mensajes "ilegales" que hagan que el sistema se detenga, dado que las máscaras y los secretos son números aleatorios. Además, al igual que en la etapa de subida, un cliente malicioso no puede corromper otros mensajes de clientes dado que cada cliente genera sus propias máscaras y secretos. 
+
+\subsection{Análisis de seguridad}
+
+\subsubsection{Seguridad de la mezcla híbrida}
+
+Necesitamos demostrar dos propiedades de la mezcla: (1) verificabilidad y (2) conocimiento-cero. Para mostrar la primera, asumamos que la encriptación autenticada usada por Riffle es segura ante falsificaciones. Entonces, para que un probador P falsifique sus entradas y no sea detectado por un verificador V, P necesita generar salidas de forma que algunas de ellas no sean desencriptadas de las entradas, pero que se autentiquen de forma adecuada bajo la clave de P. Sin embargo, los textos cifrados son infalsificables y las claves de V son desconocidas dado que P sólo conoce las encriptadas $k_i$. Eso implica que P no puede generar salidas. Utilizamos también el número de ronda, que es cedido internamente por P, como el nonce de la encriptación autenticada para garantizar la originalidad de los datos y detiene ataques repetidos por P. Por tanto, la mezcla y desencriptación de P es valida si y sólo si V puede autenticar todas las salidas de textos cifrados y la mezcla puede ser verificada. 
+
+Para probar el conocimiento-cero, asumimos que el esquema de encriptación es seguro. Eso significa que V sólo aprende información insignificante observando las entradas y salidas de textos cifrados de P. Entonces, V puede simular las respuestas de P encriptando valores aleatorios con las claves almacenadas en V: las claves se guardan en el mismo orden de salida de P, y los textos cifrados salida de P son indistinguibles para la encriptación de valores aleatorios si dicha encriptación es semánticamente segura. Finalmente, las claves en V no filtran la permutación de P dado que la mezcla verificada usada para compartir las claves tiene la propiedad de conocimiento-cero. 
+
+\subsubsection{Seguridad de Riffle}
+\begin{itemize}
+	\item \textbf{Corrección.} Si el protocolo se completa de forma fidedigna, entonces los servidores simplemente mezclarán los mensajes y el servidor final los publicará en texto plano en todos los servidores. Los mensajes estarán también disponibles para los clientes vía PIR o difusión. 
+	\item \textbf{Anonimato del emisor.} El anonimato del emisor se basa en la verificabilidad y conocimiento-cero de la mezcla híbrida. Durante las etapas de subida y mezcla del protocolo. $S_i$, un servidor de subida, es el probador P, y $S_{i+1}$, un servidor de bajada, es el verificador V de la mezcla híbrida. Intuitivamente, verificabilidad asegura que el protocolo se completa fielmente; en caso contrario el servidor honesto notificará un error. Más aún, dado que la mezcla se caracteriza por ser conocimiento-cero, la permutación de un servidor honesto es desconocida para un adversario. Por tanto, la permutación final de los mensajes es también desconocida para un adversario, y ningún cliente o servidor malicioso pueden adquirir un mensaje de otro honesto. 
+	\item \textbf{Anonimato del receptor.} El anonimato de las descargas depende de la seguridad del PIR y PRNGs. Intuitivamente, 
+	si las máscaras se generan de forma aleatoria, entonces la máscara m-ésima no puede ser inferida de las anteriores. La optimización para reducir el número de veces que se comparten las máscaras es seguro si el PRNG es criptográficamente seguro, lo que quiere decir que las máscaras no se pueden distinguir de máscaras realmente aleatorias. Finalmente, la recopilación de los mensajes en un servidor es segura si los servidores maliciosos no conocen todos los secretos. Si es así, los adversarios no podrían saber el índice del mensaje descargado por un cliente honesto.
+\end{itemize}

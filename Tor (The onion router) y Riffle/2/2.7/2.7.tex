@@ -1,0 +1,10 @@
+Las Autoridades de Directorio en la red Tor son unos servidores encargados de la gestión, mantenimiento y ordenación de los nodos en la red y su información. Estos servidores son los únicos en los que la red confía y son todos ellos pertenecientes a los creadores del proyecto. Precisamente por estos servidores se dice que Tor es una red parcialmente descentralizada, ya que estos ordenadores suponen la parte centralizada de la misma. Actualmente hay 10 autoridades de directorio, siendo dicho número variable a lo largo del tiempo para mantener la capacidad de la red.\\
+Las autoridades de directorio han sufrido varios cambios a lo largo del tiempo que han conformado lo que son actualmente:
+\begin{itemize}
+	\item Versión 1:
+		En esta versión las autoridades de directorio se concibieron como servidores a los que se les pedía información sobre los descriptores de los nodos. A raíz de esta funcionalidad se creó la caché de directorio que agiliza la consulta sobre nodos de la red.
+	\item Versión 2:
+		En esta versión se agilizó un poco más la consulta sobre nodos a las autoridades de directorio, ya que desde esta versión los usuarios sólo descargan la información de los nodos cuya información no conocen. Así mismo se implementó el "network status" el cual es actualizado cada hora y que indica el estado de la porción de la red que controla una Autoridad de Directorio.
+	\item Versión 3:
+		En esta última versión se mejora el uso de la banda ancha como en las anteriores. Además se introduce el consenso de los network status y las votaciones de las autoridades. En consenso de los network status es un archivo que almacena la información de los nodos que han conseguido pasar la votación de los nodos, es decir, que cumplen las características necesarias para ser usados en la red. El proceso de votación consiste en el voto de cada una de las autoridades acerca de los nodos que se incluyen en su porción de red. Con estos datos el consenso de network status es rellenado para obtener todos los nodos válidos. De este consenso se almacenan las tres últimas versiones para no descartar nodos tan drásticamente.
+\end{itemize}
